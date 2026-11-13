@@ -1,0 +1,16 @@
+{
+ "intro": "노블365의원 · 노블경희한의원을 찾아주신 분들이 네이버에 남겨주신 이야기입니다.",
+ "notice": "네이버 플레이스에 남겨진 방문자 리뷰 중 일부를 옮겼으며, 작성자 정보는 표시하지 않습니다. 치료 결과는 개인에 따라 다를 수 있습니다.",
+ "clinics": [
+  {
+   "name": "노블365의원",
+   "naver_url": "https://map.naver.com/p/entry/place/1702945193",
+   "reviews": []
+  },
+  {
+   "name": "노블경희한의원",
+   "naver_url": "https://map.naver.com/p/entry/place/1083496692",
+   "reviews": []
+  }
+ ]
+}

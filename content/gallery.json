@@ -1,0 +1,53 @@
+{
+  "intro": "환자분이 편안하게 치료받을 수 있도록 깨끗하고 쾌적한 공간을 준비했습니다.",
+  "photos": [
+    {
+      "image": "/images/photos/building.jpg",
+      "caption": "용인메디컬센터 2층"
+    },
+    {
+      "image": "/images/photos/room.jpg",
+      "caption": "1인실 입원실 (개인 샤워실)"
+    },
+    {
+      "image": "/images/photos/inpatient.jpg",
+      "caption": "입원실"
+    },
+    {
+      "image": "/images/photos/meeting.jpg",
+      "caption": "양·한방 협진 회의"
+    },
+    {
+      "image": "/images/photos/consult1.jpg",
+      "caption": "영상 진단 상담"
+    },
+    {
+      "image": "/images/photos/consult2.jpg",
+      "caption": "진료실"
+    },
+    {
+      "image": "/images/photos/treat1.jpg",
+      "caption": "도수·운동치료"
+    },
+    {
+      "image": "/images/photos/treat2.jpg",
+      "caption": "C-arm 주사치료"
+    },
+    {
+      "image": "/images/photos/doctor1.jpg",
+      "caption": "척추 모형 설명"
+    },
+    {
+      "image": "/images/photos/doctor2.jpg",
+      "caption": "원장 진료실"
+    },
+    {
+      "image": "",
+      "caption": "물리치료실"
+    },
+    {
+      "image": "",
+      "caption": "한방치료실"
+    }
+  ]
+}

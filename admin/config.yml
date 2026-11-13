@@ -1,0 +1,291 @@
+# ─────────────────────────────────────────────
+#  노블365 홈페이지 관리자 설정
+#  ※ 아래 repo: 부분만 본인 GitHub 아이디/저장소 이름으로 바꾸세요.
+# ─────────────────────────────────────────────
+backend:
+  name: github
+  repo: jaredkimshow84/noble-site
+  branch: main
+  commit_messages:
+    update: "홈페이지 수정: {{slug}}"
+
+locale: ko
+media_folder: images/uploads
+public_folder: /images/uploads
+
+collections:
+  # ───────── 1. 공지사항 · 팝업 ─────────
+  - name: notices
+    label: "📢 공지사항 · 팝업"
+    files:
+      - name: notices
+        label: "공지사항 / 팝업 관리"
+        file: content/notices.json
+        format: json
+        fields:
+          - name: notices
+            label: "공지 목록"
+            label_singular: "공지"
+            widget: list
+            summary: "{{fields.date}} · {{fields.title}} {{fields.popup}}"
+            fields:
+              - { name: id, label: "공지 코드 (영문/숫자, 공지마다 다르게)", widget: string, hint: "예) holiday-2026-chuseok. 내용을 바꿔 팝업을 다시 띄우고 싶으면 이 코드를 바꾸세요." }
+              - { name: title, label: "제목", widget: string }
+              - { name: date, label: "등록일", widget: datetime, format: "YYYY-MM-DD", time_format: false }
+              - { name: body, label: "내용", widget: text, required: false, hint: "줄바꿈은 그대로 표시됩니다." }
+              - { name: image, label: "팝업 이미지 (선택)", widget: image, required: false, hint: "포스터 이미지를 올리면 팝업에 크게 표시됩니다. 권장 가로 800px" }
+              - { name: link, label: "클릭 시 이동할 주소 (선택)", widget: string, required: false }
+              - { name: popup, label: "팝업으로 띄우기", widget: boolean, default: false }
+              - { name: popup_start, label: "팝업 시작일", widget: datetime, format: "YYYY-MM-DD", time_format: false, required: false }
+              - { name: popup_end, label: "팝업 종료일 (이날까지 표시)", widget: datetime, format: "YYYY-MM-DD", time_format: false, required: false }
+
+  # ───────── 2. 병원 기본정보 ─────────
+  - name: site
+    label: "🏥 병원 기본정보 · 진료시간"
+    files:
+      - name: site
+        label: "기본정보 / 진료시간 / 메인 문구"
+        file: content/site.json
+        format: json
+        fields:
+          - { name: name, label: "병원 이름 (전체)", widget: string }
+          - { name: domain, label: "도메인 (예: noble365.kr)", widget: string, required: false, hint: "도메인을 연결한 뒤 입력하면 검색엔진용 사이트맵이 자동으로 만들어집니다." }
+          - { name: seo_description, label: "검색 결과 설명 문구", widget: text, required: false }
+          - { name: privacy_officer, label: "개인정보 보호책임자 이름", widget: string, required: false }
+          - { name: name_short, label: "병원 이름 (짧게, 로고 옆)", widget: string }
+          - { name: name_en, label: "영문 표기", widget: string, required: false }
+          - { name: hero_badge, label: "메인 상단 배지 문구", widget: string, required: false }
+          - { name: hero_title, label: "메인 큰 제목 (줄바꿈 가능)", widget: text }
+          - { name: hero_sub, label: "메인 작은 문구", widget: string }
+          - { name: about_title, label: "병원소개 제목", widget: string, required: false }
+          - { name: about_lead, label: "병원소개 첫 문구", widget: text, required: false }
+          - { name: about_photo, label: "병원소개 대표 사진", widget: image, required: false }
+          - name: about_sections
+            label: "병원소개 항목"
+            widget: list
+            required: false
+            fields:
+              - { name: title, label: "제목", widget: string }
+              - { name: desc, label: "설명", widget: text }
+          - name: strengths
+            label: "병원 강점 (메인 3개 카드)"
+            widget: list
+            fields:
+              - { name: title, label: "제목", widget: string }
+              - { name: desc, label: "설명", widget: text }
+          - name: hours
+            label: "진료시간"
+            label_singular: "진료시간 줄"
+            widget: list
+            hint: "구분에 '평일', '주말', '점심' 단어가 들어가면 '지금 진료중' 표시가 자동 계산됩니다."
+            fields:
+              - { name: label, label: "구분 (예: 평일 (월~금))", widget: string }
+              - { name: time, label: "시간 (예: 09:00 - 20:00)", widget: string }
+              - { name: note, label: "비고 (예: 접수마감 19:30)", widget: string, required: false }
+          - { name: hours_notice, label: "진료시간 안내 문구", widget: string, required: false }
+          - name: phones
+            label: "전화번호"
+            widget: list
+            fields:
+              - { name: label, label: "구분", widget: string }
+              - { name: number, label: "번호", widget: string }
+          - { name: fax, label: "팩스", widget: string, required: false }
+          - { name: address, label: "주소", widget: string }
+          - { name: parking, label: "주차 안내", widget: text, required: false }
+          - { name: naver_map, label: "네이버 지도 링크", widget: string, required: false }
+          - { name: kakao_map, label: "카카오맵 링크", widget: string, required: false }
+          - { name: kakao_chat_url, label: "카카오톡 채널 채팅 주소 (예: https://pf.kakao.com/_xxxx/chat)", widget: string, required: false, hint: "입력하면 모든 페이지 오른쪽 아래에 \"카톡 상담\" 버튼이 생깁니다." }
+          - { name: naver_talk_url, label: "네이버 톡톡 주소", widget: string, required: false, hint: "입력하면 \"네이버 톡톡\" 버튼이 생깁니다." }
+          - { name: ceo, label: "대표자", widget: string }
+          - name: biz_numbers
+            label: "사업자등록번호"
+            widget: list
+            fields:
+              - { name: label, label: "기관", widget: string }
+              - { name: number, label: "번호", widget: string }
+          - name: sns
+            label: "SNS 링크 (주소를 비우면 표시 안 됨)"
+            widget: list
+            fields:
+              - { name: label, label: "이름", widget: string }
+              - { name: url, label: "주소", widget: string, required: false }
+
+  # ───────── 3. 의료진 ─────────
+  - name: doctors
+    label: "👨‍⚕️ 의료진"
+    files:
+      - name: doctors
+        label: "의료진 관리"
+        file: content/doctors.json
+        format: json
+        fields:
+          - { name: intro, label: "의료진 페이지 소개 문구", widget: text }
+          - name: doctors
+            label: "의료진 목록 (드래그로 순서 변경)"
+            label_singular: "의료진"
+            widget: list
+            summary: "{{fields.name}} {{fields.title}} ({{fields.group}})"
+            fields:
+              - { name: name, label: "이름", widget: string }
+              - { name: title, label: "직책", widget: string }
+              - { name: days, label: "진료 요일 (예: 월 · 수 · 금, 비우면 표시 안 함)", widget: string, required: false }
+              - { name: group, label: "구분", widget: select, options: ["의사 · 한의사 복수면허", "의사", "한의사", "의료기사"] }
+              - { name: photo, label: "사진", widget: image, required: false, hint: "세로 사진 권장 (예: 800×860px)" }
+              - { name: quote, label: "한마디", widget: string, required: false }
+              - { name: career, label: "약력 (한 줄씩)", widget: list, field: { name: line, label: "약력", widget: string }, required: false }
+
+  # ───────── 4. 진료과목 ─────────
+  - name: clinics
+    label: "🩺 진료과목 내용"
+    files:
+      - name: clinics
+        label: "진료과목 / 세부 페이지"
+        file: content/clinics.json
+        format: json
+        fields:
+          - name: categories
+            label: "대분류 메뉴"
+            label_singular: "대분류"
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: id, label: "주소용 코드 (영문, 바꾸지 마세요)", widget: string }
+              - { name: title, label: "메뉴 이름", widget: string }
+              - { name: summary, label: "한 줄 요약", widget: string }
+              - { name: intro, label: "소개 문구", widget: text }
+              - name: items
+                label: "세부 페이지"
+                label_singular: "세부 페이지"
+                widget: list
+                summary: "{{fields.title}}"
+                fields:
+                  - { name: id, label: "주소용 코드 (영문)", widget: string }
+                  - { name: title, label: "페이지 제목", widget: string }
+                  - { name: subtitle, label: "부제 (질환명 등)", widget: string, required: false }
+                  - { name: intro, label: "소개 문구", widget: text }
+                  - name: sections
+                    label: "본문 블록"
+                    label_singular: "블록"
+                    widget: list
+                    summary: "{{fields.heading}}"
+                    fields:
+                      - { name: heading, label: "소제목", widget: string }
+                      - { name: style, label: "모양", widget: select, default: "cards", options: [ { label: "카드형", value: "cards" }, { label: "체크리스트 (자가진단)", value: "check" }, { label: "단계형 (STEP)", value: "steps" }, { label: "자주 묻는 질문", value: "faq" }, { label: "글만", value: "text" } ] }
+                      - { name: text, label: "설명 글", widget: text, required: false }
+                      - name: items
+                        label: "항목"
+                        label_singular: "항목"
+                        widget: list
+                        required: false
+                        summary: "{{fields.title}}"
+                        fields:
+                          - { name: title, label: "제목 (FAQ는 질문)", widget: string }
+                          - { name: desc, label: "설명 (FAQ는 답변)", widget: text, required: false }
+
+  # ───────── 5. 병원 둘러보기 ─────────
+  - name: gallery
+    label: "📷 병원 둘러보기 사진"
+    files:
+      - name: gallery
+        label: "시설 사진"
+        file: content/gallery.json
+        format: json
+        fields:
+          - { name: intro, label: "소개 문구", widget: string }
+          - name: photos
+            label: "사진"
+            label_singular: "사진"
+            widget: list
+            summary: "{{fields.caption}}"
+            fields:
+              - { name: image, label: "사진", widget: image, required: false }
+              - { name: caption, label: "설명", widget: string }
+
+  # ───────── 6. 비급여 진료비용 ─────────
+  - name: nonpay
+    label: "💰 비급여 진료비용"
+    files:
+      - name: nonpay
+        label: "비급여 진료비용 게시"
+        file: content/nonpay.json
+        format: json
+        fields:
+          - { name: posted_date, label: "게시일 (가격 바꾸면 날짜도 변경)", widget: datetime, format: "YYYY-MM-DD", time_format: false }
+          - { name: intro, label: "상단 안내 문구", widget: text }
+          - name: groups
+            label: "분류"
+            label_singular: "분류"
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: title, label: "분류 이름", widget: string }
+              - name: items
+                label: "항목"
+                label_singular: "항목"
+                widget: list
+                summary: "{{fields.name}} · {{fields.price}}"
+                fields:
+                  - { name: name, label: "항목명", widget: string }
+                  - { name: detail, label: "비고", widget: string, required: false }
+                  - { name: price, label: "비용 (예: 50,000원)", widget: string }
+          - { name: notes, label: "하단 안내사항", widget: text, required: false }
+
+  # ───────── 7. 메인 BEST5 · 만족도 조사 ─────────
+  - name: home
+    label: "⭐ 메인 추천치료 · 만족도 조사"
+    files:
+      - name: home
+        label: "추천치료 BEST 5 / 지정진료 / 만족도 조사 링크"
+        file: content/home.json
+        format: json
+        fields:
+          - { name: best5_title, label: "추천치료 제목", widget: string }
+          - { name: best5_sub, label: "추천치료 부제", widget: string }
+          - name: best5
+            label: "추천 치료 (위에서부터 No.1)"
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: title, label: "치료명", widget: string }
+              - { name: sub, label: "세부 내용", widget: string }
+              - { name: desc, label: "설명", widget: string }
+              - { name: link, label: "클릭 시 이동 주소", widget: string, required: false }
+          - { name: cooperation, label: "지정 진료 안내 문구", widget: text }
+          - name: promises
+            label: "약속 4가지"
+            widget: list
+            fields:
+              - { name: title, label: "제목", widget: string }
+              - { name: desc, label: "설명", widget: string }
+          - { name: survey_url, label: "만족도 조사 구글 설문지 링크", widget: string, required: false, hint: "구글 설문지 '보내기 → 링크' 주소를 붙여넣으면 만족도 조사 페이지에 버튼과 QR코드가 자동으로 생깁니다." }
+          - { name: survey_intro, label: "만족도 조사 안내 문구", widget: text }
+          - { name: survey_privacy, label: "개인정보 안내 문구", widget: text }
+
+  # ───────── 8. 방문자 리뷰 ─────────
+  - name: reviews
+    label: "💬 방문자 리뷰"
+    files:
+      - name: reviews
+        label: "방문자 리뷰"
+        file: content/reviews.json
+        format: json
+        fields:
+          - { name: intro, label: "상단 문구", widget: string }
+          - { name: notice, label: "하단 안내 문구", widget: text }
+          - name: clinics
+            label: "병원별 리뷰"
+            widget: list
+            summary: "{{fields.name}}"
+            fields:
+              - { name: name, label: "병원 이름", widget: string }
+              - { name: naver_url, label: "네이버 플레이스 주소", widget: string }
+              - name: reviews
+                label: "리뷰"
+                label_singular: "리뷰"
+                widget: list
+                summary: "{{fields.text}}"
+                hint: "⚠ 치료 효과(통증이 사라졌다, 완치됐다 등)를 말하는 리뷰는 의료법상 치료경험담 광고에 해당할 수 있으니 친절·청결·설명·대기시간 등 서비스 관련 내용만 올려주세요."
+                fields:
+                  - { name: text, label: "리뷰 내용", widget: text }
+                  - { name: date, label: "작성일 (선택)", widget: string, required: false }
+                  - { name: tags, label: "키워드 (선택, 예: 친절해요)", widget: list, required: false }
