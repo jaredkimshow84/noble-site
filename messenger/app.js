@@ -68,14 +68,16 @@
   };
 
   /* ---------------- 로그인 ---------------- */
+  function joinCode() { var m = /^#join\/([\w-]+)/.exec(location.hash); return m ? m[1] : ''; }
   function renderLogin(msg) {
+    if (joinCode() && !msg) { renderJoin(); return; }
     root.innerHTML = '<main class="login"><form class="login-card" id="loginForm" novalidate>' +
       '<div class="login-brand"><img src="../images/logo.svg" alt=""><div><b>노블 메신저</b><span>노블365의원 · 노블경희한의원</span></div></div>' +
       '<div class="field"><label for="lid">아이디</label><input class="input" id="lid" autocomplete="username" autocapitalize="off" spellcheck="false" required></div>' +
       '<div class="field"><label for="lpw">비밀번호</label><input class="input" id="lpw" type="password" autocomplete="current-password" required></div>' +
       '<p class="err" id="lerr">' + esc(msg || '') + '</p>' +
       '<button class="btn btn-navy block" id="lbtn">로그인</button>' +
-      '<p class="muted small" style="margin-top:14px;text-align:center">계정은 본부장님(관리자)이 발급합니다.</p></form></main>';
+      '<p class="muted small" style="margin-top:14px;text-align:center">처음이신가요? 관리자에게 받은 <b>가입 링크</b>로 가입해 주세요.</p></form></main>';
     $('#loginForm').addEventListener('submit', function (e) {
       e.preventDefault();
       var id = $('#lid').value.trim().toLowerCase(), pw = $('#lpw').value;
@@ -89,6 +91,43 @@
     setTimeout(function () { var i = $('#lid'); if (i) i.focus(); }, 50);
   }
 
+  function renderJoin(done) {
+    var code = joinCode();
+    if (done) {
+      root.innerHTML = '<main class="login"><div class="login-card"><div class="login-brand"><img src="../images/logo.svg" alt=""><div><b>가입 신청 완료</b><span>노블 메신저</span></div></div>' +
+        '<p style="margin-bottom:16px">관리자가 승인하면 바로 로그인할 수 있습니다. 승인까지 잠시 기다려 주세요.</p><a class="btn btn-navy block" href="#">로그인 화면으로</a></div></main>';
+      return;
+    }
+    root.innerHTML = '<main class="login"><form class="login-card" id="joinForm" novalidate>' +
+      '<div class="login-brand"><img src="../images/logo.svg" alt=""><div><b>노블 메신저 가입</b><span>노블365의원 · 노블경희한의원 직원용</span></div></div>' +
+      '<div class="row2"><div class="field"><label for="jn">이름</label><input class="input" id="jn" autocomplete="name"></div>' +
+      '<div class="field"><label for="jc">소속</label><select class="input" id="jc"><option>노블365의원</option><option>노블경희한의원</option><option>공통</option></select></div></div>' +
+      '<div class="row2"><div class="field"><label for="jd">부서</label><input class="input" id="jd" placeholder="예: 원무, 간호"></div>' +
+      '<div class="field"><label for="jt">직책 <span class="muted">(선택)</span></label><input class="input" id="jt" placeholder="예: 실장"></div></div>' +
+      '<div class="field"><label for="ji">사용할 아이디</label><input class="input" id="ji" autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="영문 소문자·숫자 3자 이상 (예: hong01)"></div>' +
+      '<div class="row2"><div class="field"><label for="jp">비밀번호</label><input class="input" id="jp" type="password" autocomplete="new-password" placeholder="8자 이상"></div>' +
+      '<div class="field"><label for="jp2">비밀번호 확인</label><input class="input" id="jp2" type="password" autocomplete="new-password"></div></div>' +
+      '<p class="err" id="jerr"></p><button class="btn btn-navy block" id="jbtn">가입 신청</button>' +
+      '<p class="muted small" style="margin-top:14px;text-align:center">이미 계정이 있으면 <a href="#" style="text-decoration:underline">로그인</a></p></form></main>';
+    $('#joinForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var body = { code: code, name: $('#jn').value.trim(), clinic: $('#jc').value, dept: $('#jd').value.trim(), title: $('#jt').value.trim(),
+        login_id: $('#ji').value.trim().toLowerCase(), password: $('#jp').value };
+      var er = $('#jerr');
+      if (!body.name) { er.textContent = '이름을 입력해 주세요.'; return; }
+      if (!/^[a-z0-9._-]{3,30}$/.test(body.login_id)) { er.textContent = '아이디는 영문 소문자·숫자 3자 이상으로 입력해 주세요.'; return; }
+      if (body.password.length < 8) { er.textContent = '비밀번호는 8자 이상이어야 합니다.'; return; }
+      if (body.password !== $('#jp2').value) { er.textContent = '두 비밀번호가 다릅니다.'; return; }
+      $('#jbtn').disabled = true; $('#jbtn').textContent = '신청 중…'; er.textContent = '';
+      sb.functions.invoke('signup', { body: body }).then(function (r) {
+        if (r.error) { var ctx = r.error.context; if (ctx && ctx.json) return ctx.json().then(function (j) { throw new Error(j.error || r.error.message); }); throw r.error; }
+        if (r.data && r.data.error) throw new Error(r.data.error);
+        renderJoin(true);
+      }).catch(function (x) { er.textContent = errMsg(x); $('#jbtn').disabled = false; $('#jbtn').textContent = '가입 신청'; });
+    });
+  }
+  window.addEventListener('hashchange', function () { if (!S.me && root.querySelector('.login')) renderLogin(); });
+
   /* ---------------- 시작 ---------------- */
   function boot() {
     return sb.auth.getSession().then(function (r) {
@@ -98,7 +137,14 @@
         if (p.error) throw p.error;
         S.profiles = {}; (p.data || []).forEach(function (x) { S.profiles[x.id] = x; });
         S.me = S.profiles[ses.user.id];
-        if (!S.me || !S.me.active) { return sb.auth.signOut().then(function () { renderLogin('메신저 사용 권한이 없는 계정입니다.'); }); }
+        if (!S.me || !S.me.active) {
+          return sb.rpc('my_status').then(function (st) {
+            var row = st.data && st.data[0];
+            var msg = row && row.pending ? '가입 승인을 기다리고 있습니다. 관리자가 승인하면 로그인할 수 있습니다.' : '사용이 정지된 계정입니다. 관리자에게 문의해 주세요.';
+            return sb.auth.signOut().then(function () { renderLogin(msg); });
+          });
+        }
+        if (/^#join/.test(location.hash)) location.hash = '#chats';
         renderShell();
         subscribeRealtime();
         return Promise.all([loadRooms(), loadNotices(), loadPending()]).then(function () { route(); });
@@ -118,7 +164,8 @@
   function setBadges() {
     var chat = S.rooms.reduce(function (a, r) { return a + (r.muted ? 0 : r.unread); }, 0);
     var nt = S.notices.filter(function (n) { return !S.noticeReads[n.id]; }).length;
-    var map = { chats: chat, notices: nt, admin: S.pendingCount, work: S.me.role === 'admin' ? S.pendingCount : 0 };
+    var signups = S.me.role === 'admin' ? Object.keys(S.profiles).filter(function (k) { return S.profiles[k].pending; }).length : 0;
+    var map = { chats: chat, notices: nt, admin: S.pendingCount + signups, work: S.me.role === 'admin' ? S.pendingCount : 0 };
     $$('[data-badge]').forEach(function (b) { var v = map[b.getAttribute('data-badge')] || 0; b.hidden = !v; b.textContent = v > 99 ? '99+' : v; });
     try { if (navigator.setAppBadge) { var tot = chat + nt; tot ? navigator.setAppBadge(tot) : navigator.clearAppBadge(); } } catch (e) {}
   }
@@ -686,18 +733,44 @@
   function reloadProfiles() { return sb.from('profiles').select('*').order('name').then(function (p) { S.profiles = {}; (p.data || []).forEach(function (x) { S.profiles[x.id] = x; }); }); }
   function renderAdmin() {
     var all = Object.keys(S.profiles).map(function (k) { return S.profiles[k]; });
-    var act = all.filter(function (p) { return p.active; }), off = all.filter(function (p) { return !p.active; });
+    var pend = all.filter(function (p) { return p.pending; });
+    var act = all.filter(function (p) { return p.active; }), off = all.filter(function (p) { return !p.active && !p.pending; });
     var main = $('#main'); main.style.justifyContent = '';
     main.innerHTML = header('직원 계정 관리', { right: '<button class="btn btn-navy sm" id="addUser">' + svg('plus').replace('<svg', '<svg style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4"') + ' 계정 만들기</button>' }) +
-      '<div class="pane-body"><div class="banner"><span>재직 ' + act.length + '명 · 정지 ' + off.length + '명</span>' + (S.pendingCount ? '<a class="btn btn-gold sm" href="#work" id="goPend">근무신청 대기 ' + S.pendingCount + '건</a>' : '') + '</div>' +
+      '<div class="pane-body"><section class="card" style="margin-top:14px" id="joinCard"><h3>직원 가입 링크</h3><p class="muted small">불러오는 중…</p></section>' +
+      (pend.length ? '<div class="group-hd" style="background:var(--gold-soft);color:var(--gold-d)">가입 승인 대기 ' + pend.length + '명</div>' + pend.map(function (p) {
+        return '<div class="person"><span class="avatar">' + esc(initial(p.name)) + '</span><span class="grow"><b>' + esc(p.name) + '</b> <span>' + esc(p.login_id) + '</span><br><span>' + esc(personLabel(p) || '부서 미입력') + '</span></span>' +
+          '<button class="btn btn-navy sm" data-approve="' + p.id + '">승인</button> <button class="btn btn-danger sm" data-reject="' + p.id + '">거절</button></div>';
+      }).join('') : '') +
+      '<div class="banner"><span>재직 ' + act.length + '명 · 정지 ' + off.length + '명</span>' + (S.pendingCount ? '<a class="btn btn-gold sm" href="#work" id="goPend">근무신청 대기 ' + S.pendingCount + '건</a>' : '') + '</div>' +
       groupPeople(act).map(function (g) { return '<div class="group-hd">' + esc(g[0]) + '</div>' + g[1].map(personRow).join(''); }).join('') +
       (off.length ? '<div class="group-hd">사용 정지 (퇴사)</div>' + off.map(personRow).join('') : '') + '</div>';
     function personRow(p) {
       return '<button class="person' + (p.active ? '' : ' off') + '" data-edit="' + p.id + '"><span class="avatar">' + esc(initial(p.name)) + '</span><span class="grow"><b>' + esc(p.name) + '</b> <span>' + esc(p.login_id) + '</span><br><span>' + esc(personLabel(p) || '부서 미지정') + '</span></span>' + (p.role === 'admin' ? '<span class="pill gold">관리자</span>' : '') + '</button>';
     }
     $('#addUser').onclick = function () { userSheet(); };
+    $$('[data-approve]').forEach(function (b) { b.onclick = function () { b.disabled = true; adminCall({ action: 'approve', id: b.getAttribute('data-approve') }).then(function () { toast('승인했습니다'); return reloadProfiles().then(function () { renderAdmin(); setBadges(); }); }).catch(function (e) { b.disabled = false; toast(esc(errMsg(e))); }); }; });
+    $$('[data-reject]').forEach(function (b) { b.onclick = function () { if (!confirmInline(b, '한 번 더')) return; adminCall({ action: 'reject', id: b.getAttribute('data-reject') }).then(function () { return reloadProfiles().then(function () { renderAdmin(); setBadges(); }); }).catch(function (e) { toast(esc(errMsg(e))); }); }; });
+    joinCard();
     var gp = $('#goPend'); if (gp) gp.onclick = function () { S.workTab = 'all'; };
     $$('[data-edit]').forEach(function (b) { b.onclick = function () { userSheet(S.profiles[b.getAttribute('data-edit')]); }; });
+  }
+  function joinCard(action) {
+    var box = $('#joinCard'); if (!box) return;
+    adminCall({ action: action || 'get_code' }).then(function (r) {
+      var code = r.code, link = code ? location.href.split('#')[0] + '#join/' + code : '';
+      box.innerHTML = '<h3>직원 가입 링크</h3>' + (code ?
+        '<p class="small" style="margin-bottom:8px">이 링크를 받은 직원은 직접 가입 신청을 할 수 있고, <b>본부장님이 승인해야</b> 사용할 수 있습니다.</p>' +
+        '<input class="input" id="joinLink" readonly value="' + esc(link) + '" aria-label="가입 링크" style="font-size:13px;margin-bottom:8px">' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-gold sm" id="copyJoin">링크 복사</button><button class="btn btn-line sm" id="newJoin">새 링크 만들기 (기존 링크 무효)</button><button class="btn btn-line sm" id="offJoin">가입 받지 않기</button></div>'
+        : '<p class="small" style="margin-bottom:8px">지금은 가입 링크가 꺼져 있습니다. 링크를 만들어 직원 단톡방이나 문자로 보내면 직원들이 직접 가입할 수 있습니다.</p><button class="btn btn-gold sm" id="newJoin">가입 링크 만들기</button>');
+      var c = $('#copyJoin'); if (c) c.onclick = function () {
+        var inp = $('#joinLink');
+        (navigator.clipboard ? navigator.clipboard.writeText(link) : Promise.reject()).then(function () { toast('가입 링크를 복사했습니다'); }, function () { inp.select(); toast('링크를 길게 눌러 복사해 주세요'); });
+      };
+      $('#newJoin').onclick = function () { joinCard('new_code'); };
+      var o = $('#offJoin'); if (o) o.onclick = function () { joinCard('disable_code'); };
+    }).catch(function (e) { box.innerHTML = '<h3>직원 가입 링크</h3><p class="err">' + esc(errMsg(e)) + '</p>'; });
   }
   function userSheet(p) {
     var isNew = !p; p = p || { clinic: '노블365의원', dept: '', title: '', role: 'staff', name: '', login_id: '' };
