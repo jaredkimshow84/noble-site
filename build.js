@@ -20,10 +20,15 @@ var D = {};
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
-['css', 'js', 'fonts', 'images', 'admin', 'content', 'src', 'messenger'].forEach(function (d) { copyDir(path.join(ROOT, d), path.join(OUT, d)); });
+['css', 'js', 'fonts', 'images', 'admin', 'content', 'src'].forEach(function (d) { copyDir(path.join(ROOT, d), path.join(OUT, d)); });
 
 var pages = R.all(D);
 Object.keys(pages).forEach(function (f) { fs.writeFileSync(path.join(OUT, f), pages[f]); });
+
+/* 메신저는 별도 저장소(noble-messenger)로 이전 → 예전 주소로 들어오면 새 주소로 이동 */
+var MSG_URL = 'https://jaredkimshow84.github.io/noble-messenger/';
+fs.mkdirSync(path.join(OUT, 'messenger'), { recursive: true });
+fs.writeFileSync(path.join(OUT, 'messenger', 'index.html'), '<!doctype html><meta charset="utf-8"><meta name="robots" content="noindex"><title>노블 메신저로 이동</title><p style="font-family:sans-serif;padding:24px">노블 메신저 주소가 바뀌었습니다. 잠시 후 이동합니다… <a href="' + MSG_URL + '">' + MSG_URL + '</a></p><script>if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){x.unregister()})});setTimeout(function(){location.replace("' + MSG_URL + '"+location.hash)},800);</script>');
 
 /* 예전 주소(clinic.html?c=..&i=..) → 새 주소로 이동 */
 fs.writeFileSync(path.join(OUT, 'clinic.html'), '<!doctype html><meta charset="utf-8"><title>이동 중</title><script>var q=new URLSearchParams(location.search),c=q.get("c")||"spine",i=q.get("i");location.replace("clinic-"+c+(i?"-"+i:"")+".html");</script>');
