@@ -20,7 +20,7 @@ var D = {};
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
-['css', 'js', 'fonts', 'images', 'admin', 'content', 'src'].forEach(function (d) { copyDir(path.join(ROOT, d), path.join(OUT, d)); });
+['css', 'js', 'fonts', 'images', 'admin', 'content', 'src', 'messenger'].forEach(function (d) { copyDir(path.join(ROOT, d), path.join(OUT, d)); });
 
 var pages = R.all(D);
 Object.keys(pages).forEach(function (f) { fs.writeFileSync(path.join(OUT, f), pages[f]); });
@@ -30,7 +30,7 @@ fs.writeFileSync(path.join(OUT, 'clinic.html'), '<!doctype html><meta charset="u
 
 var domain = (D.site.domain || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
 var base = domain ? 'https://' + domain + '/' : '';
-fs.writeFileSync(path.join(OUT, 'robots.txt'), 'User-agent: *\nDisallow: /admin/\n' + (base ? 'Sitemap: ' + base + 'sitemap.xml\n' : ''));
+fs.writeFileSync(path.join(OUT, 'robots.txt'), 'User-agent: *\nDisallow: /admin/\nDisallow: /messenger/\n' + (base ? 'Sitemap: ' + base + 'sitemap.xml\n' : ''));
 if (base) {
   fs.writeFileSync(path.join(OUT, 'sitemap.xml'), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
     Object.keys(pages).filter(function (f) { return f !== 'privacy.html'; }).map(function (f) { return '  <url><loc>' + base + (f === 'index.html' ? '' : f) + '</loc></url>'; }).join('\n') + '\n</urlset>\n');
