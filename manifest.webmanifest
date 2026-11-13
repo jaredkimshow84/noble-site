@@ -1,0 +1,16 @@
+{
+  "name": "노블 메신저",
+  "short_name": "노블 메신저",
+  "description": "노블365의원 · 노블경희한의원 직원 메신저",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0d2440",
+  "theme_color": "#0d2440",
+  "lang": "ko",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
